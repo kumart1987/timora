@@ -1,4 +1,13 @@
 {
   "buildCommand": "npm run build",
-  "outputDirectory": "frontend/dist/frontend/browser"
+  "outputDirectory": "frontend/dist/frontend/browser",
+  "functions": {
+    "backend/server.js": {
+      "runtime": "@vercel/node"
+    }
+  },
+  "rewrites": [
+    { "source": "/api/:path*", "destination": "/backend/server.js" },
+    { "source": "/uploads/:path*", "destination": "/backend/uploads/:path*" }
+  ]
 }
