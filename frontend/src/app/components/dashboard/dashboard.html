@@ -1,0 +1,121 @@
+<div class="page-container" *ngIf="!isLoading">
+  <div class="page-header">
+    <h1>Welcome to TIMORA</h1>
+    <p>Here is your personal overview for today.</p>
+  </div>
+
+  <!-- Stats Grid -->
+  <div class="stats-grid">
+    <!-- Income Stat Card -->
+    <div class="stat-card card-income" routerLink="/tracker">
+      <div class="stat-header">
+        <span>Total Income</span>
+        <mat-icon class="icon-income">arrow_upward</mat-icon>
+      </div>
+      <div class="stat-value">₹{{ stats.totalIncome | number:'1.2-2' }}</div>
+      <div class="stat-subtext">
+        <span class="trend-neutral">Tracked wallet additions</span>
+      </div>
+    </div>
+
+    <!-- Expenses Stat Card -->
+    <div class="stat-card card-expense" routerLink="/tracker">
+      <div class="stat-header">
+        <span>Total Expenses</span>
+        <mat-icon class="icon-expense">arrow_downward</mat-icon>
+      </div>
+      <div class="stat-value">₹{{ stats.totalExpenses | number:'1.2-2' }}</div>
+      <div class="stat-subtext">
+        <span class="trend-neutral">Outflow and bill payments</span>
+      </div>
+    </div>
+
+    <!-- Investments Stat Card -->
+    <div class="stat-card card-invest" routerLink="/investments">
+      <div class="stat-header">
+        <span>Investments Portfolio</span>
+        <mat-icon class="icon-invest">show_chart</mat-icon>
+      </div>
+      <div class="stat-value">₹{{ stats.investmentValue | number:'1.2-2' }}</div>
+      <div class="stat-subtext">
+        <span [ngClass]="stats.investmentGain >= 0 ? 'trend-positive' : 'trend-negative'">
+          <mat-icon class="inline-icon">{{ stats.investmentGain >= 0 ? 'trending_up' : 'trending_down' }}</mat-icon>
+          ₹{{ stats.investmentGain | number:'1.2-2' }} ({{ stats.investmentGain >= 0 ? 'Gain' : 'Loss' }})
+        </span>
+      </div>
+    </div>
+
+    <!-- Health/Weight Stat Card -->
+    <div class="stat-card card-health" routerLink="/health">
+      <div class="stat-header">
+        <span>Current Weight</span>
+        <mat-icon class="icon-health">monitor_weight</mat-icon>
+      </div>
+      <div class="stat-value">{{ stats.currentWeight ? stats.currentWeight + ' kg' : '--' }}</div>
+      <div class="stat-subtext">
+        <span class="trend-neutral" *ngIf="stats.goalWeight">Target: {{ stats.goalWeight }} kg</span>
+        <span class="trend-neutral" *ngIf="!stats.goalWeight">No target goal set</span>
+      </div>
+    </div>
+
+    <!-- Trips Stat Card -->
+    <div class="stat-card card-trips" routerLink="/trips">
+      <div class="stat-header">
+        <span>Upcoming Trips</span>
+        <mat-icon class="icon-trips">explore</mat-icon>
+      </div>
+      <div class="stat-value">{{ stats.upcomingTrips }}</div>
+      <div class="stat-subtext">
+        <span class="trend-neutral">Planned trips & adventures</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Savings Overview & Quick Actions -->
+  <div class="dashboard-details">
+    <div class="detail-card glass-card savings-overview">
+      <h3>Savings Rate & Net Cashflow</h3>
+      <div class="cashflow-summary">
+        <div class="cashflow-item">
+          <span class="label">Net Cashflow</span>
+          <span class="value" [ngClass]="stats.netBalance >= 0 ? 'text-positive' : 'text-negative'">
+            ₹{{ stats.netBalance | number:'1.2-2' }}
+          </span>
+        </div>
+        <div class="cashflow-item">
+          <span class="label">Savings Ratio</span>
+          <span class="value text-accent">{{ savingPercent }}%</span>
+        </div>
+      </div>
+      <div class="progress-bar-container">
+        <mat-progress-bar mode="determinate" [value]="savingPercent" color="primary"></mat-progress-bar>
+      </div>
+      <p class="savings-tip" *ngIf="savingPercent >= 50">🎉 Outstanding! You are saving more than 50% of your income.</p>
+      <p class="savings-tip" *ngIf="savingPercent < 50 && savingPercent > 20">👍 Good progress. Try to reduce discretionary expenses to save more.</p>
+      <p class="savings-tip" *ngIf="savingPercent <= 20">💡 Focus on lowering non-essential bills and subscriptions.</p>
+    </div>
+
+    <div class="detail-card glass-card quick-actions">
+      <h3>Quick Actions</h3>
+      <div class="action-buttons-grid">
+        <button mat-stroked-button color="primary" routerLink="/tracker">
+          <mat-icon>add</mat-icon> Add Income/Expense
+        </button>
+        <button mat-stroked-button color="accent" routerLink="/shopping">
+          <mat-icon>receipt</mat-icon> Log Shopping Invoice
+        </button>
+        <button mat-stroked-button color="warn" routerLink="/health">
+          <mat-icon>scale</mat-icon> Log Daily Weight
+        </button>
+        <button mat-stroked-button routerLink="/trips">
+          <mat-icon>flight</mat-icon> Plan New Trip
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="loading-container" *ngIf="isLoading">
+  <mat-spinner diameter="50"></mat-spinner>
+  <p>Gathering dashboard details...</p>
+</div>

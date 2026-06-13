@@ -1,0 +1,250 @@
+.invest-summary-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 24px;
+  margin-bottom: 32px;
+}
+
+.summary-tile {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 24px;
+  border-left: 4px solid var(--glass-border) !important;
+  transition: var(--transition-smooth);
+
+  &:nth-child(1) {
+    border-left-color: var(--color-primary) !important;
+    &:hover {
+      box-shadow: 0 16px 45px rgba(99, 102, 241, 0.1), 0 0 25px rgba(99, 102, 241, 0.05);
+      border-color: var(--color-primary) !important;
+    }
+  }
+  
+  &:nth-child(2) {
+    border-left-color: var(--color-secondary) !important;
+    &:hover {
+      box-shadow: 0 16px 45px rgba(6, 182, 212, 0.1), 0 0 25px rgba(6, 182, 212, 0.05);
+      border-color: var(--color-secondary) !important;
+    }
+  }
+
+  &:nth-child(3) {
+    border-left-color: var(--color-success) !important;
+    &:hover {
+      box-shadow: 0 16px 45px rgba(16, 185, 129, 0.1), 0 0 25px rgba(16, 185, 129, 0.05);
+      border-color: var(--color-success) !important;
+    }
+  }
+
+  .label {
+    font-size: 12px;
+    color: var(--color-text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-weight: 600;
+    font-family: 'Outfit', sans-serif;
+  }
+
+  .value {
+    font-size: 30px;
+    font-weight: 800;
+    letter-spacing: -0.5px;
+  }
+}
+
+.investments-layout {
+  display: flex;
+  gap: 24px;
+  width: 100%;
+
+  @media (max-width: 959px) {
+    flex-direction: column;
+  }
+
+  .main-panel {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .right-panel {
+    width: 340px;
+    flex-shrink: 0;
+
+    @media (max-width: 959px) {
+      width: 100%;
+    }
+  }
+
+  .form-panel {
+    padding: 24px;
+    box-sizing: border-box;
+    animation: slideIn 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    border-top: 3px solid var(--color-primary) !important;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3), 0 0 15px rgba(99, 102, 241, 0.05) !important;
+
+    .form-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+      h3 {
+        margin: 0;
+        font-size: 18px;
+        font-weight: 700;
+        font-family: 'Outfit', sans-serif;
+      }
+    }
+
+    .invest-form {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .form-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 12px;
+      margin-top: 8px;
+    }
+  }
+
+  .chart-panel {
+    padding: 24px;
+    animation: slideIn 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: var(--transition-smooth);
+
+    &:hover {
+      transform: translateY(-4px);
+      border-color: rgba(99, 102, 241, 0.2);
+      box-shadow: 0 16px 40px rgba(0, 0, 0, 0.4), 0 0 25px rgba(99, 102, 241, 0.08);
+    }
+
+    h4 {
+      margin: 0 0 20px 0;
+      font-size: 16px;
+      font-weight: 600;
+      font-family: 'Outfit', sans-serif;
+      color: var(--color-text-primary);
+      letter-spacing: 0.5px;
+    }
+    
+    .canvas-wrapper {
+      position: relative;
+      height: 240px;
+      width: 100%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+  }
+}
+
+.header-flex {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+// Inline price updates
+.price-display-cell {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+
+  .edit-price-btn {
+    opacity: 0;
+    transition: var(--transition-smooth);
+    width: 28px;
+    height: 28px;
+    line-height: 28px;
+
+    mat-icon {
+      font-size: 16px;
+      width: 16px;
+      height: 16px;
+      color: var(--color-primary);
+    }
+  }
+}
+
+tr:hover .edit-price-btn {
+  opacity: 1;
+}
+
+.price-edit-cell {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+
+  .inline-price-input {
+    width: 80px;
+    padding: 6px 8px;
+    background: rgba(0, 0, 0, 0.35);
+    border: 1px solid var(--glass-border);
+    border-radius: 6px;
+    color: var(--color-text-primary);
+    font-size: 13px;
+    font-family: 'Inter', sans-serif;
+    transition: var(--transition-smooth);
+
+    &:focus {
+      outline: none;
+      border-color: var(--color-secondary);
+      box-shadow: 0 0 8px rgba(6, 182, 212, 0.3);
+    }
+  }
+
+  button {
+    width: 28px;
+    height: 28px;
+    line-height: 28px;
+    
+    mat-icon {
+      font-size: 16px;
+      width: 16px;
+      height: 16px;
+    }
+  }
+}
+
+.gain-loss-cell {
+  font-weight: 600;
+  font-family: 'Inter', sans-serif;
+}
+
+// Allocation badges
+.badge-stock {
+  background: rgba(6, 182, 212, 0.12);
+  color: var(--color-secondary);
+  border: 1px solid rgba(6, 182, 212, 0.25);
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  font-family: 'Outfit', sans-serif;
+}
+
+.badge-mf {
+  background: rgba(139, 92, 246, 0.12);
+  color: var(--color-primary);
+  border: 1px solid rgba(139, 92, 246, 0.25);
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  font-family: 'Outfit', sans-serif;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(15px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

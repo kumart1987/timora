@@ -1,0 +1,293 @@
+.trips-layout {
+  display: flex;
+  gap: 24px;
+  transition: var(--transition-smooth);
+  width: 100%;
+
+  .main-panel {
+    flex: 1;
+    min-width: 0;
+    transition: var(--transition-smooth);
+  }
+
+  .form-panel {
+    width: 340px;
+    padding: 24px;
+    height: fit-content;
+    box-sizing: border-box;
+    transition: var(--transition-smooth);
+    animation: slideIn 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    border-top: 3px solid var(--color-warning) !important;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3), 0 0 15px rgba(245, 158, 11, 0.05) !important;
+
+    .form-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+      h3 {
+        margin: 0;
+        font-size: 18px;
+        font-weight: 700;
+        font-family: 'Outfit', sans-serif;
+      }
+    }
+
+    .trips-form {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .form-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 12px;
+      margin-top: 8px;
+    }
+  }
+}
+
+.header-flex {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+// Dates display column
+.dates-cell {
+  vertical-align: middle;
+
+  .date-range-display {
+    display: flex;
+    flex-direction: column;
+    font-size: 14px;
+    font-weight: 500;
+    line-height: 1.4;
+    font-family: 'Inter', sans-serif;
+
+    .date-separator {
+      font-size: 11px;
+      color: var(--color-text-secondary);
+      text-transform: uppercase;
+      margin: 2px 0;
+    }
+  }
+
+  .countdown-badge-wrapper {
+    margin-top: 6px;
+  }
+}
+
+// Countdown badges
+.badge-countdown {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.2px;
+  font-family: 'Outfit', sans-serif;
+  text-transform: uppercase;
+}
+
+.badge-future {
+  background: rgba(99, 102, 241, 0.12);
+  color: var(--color-primary);
+  border: 1px solid rgba(99, 102, 241, 0.25);
+}
+
+.badge-today {
+  background: rgba(6, 182, 212, 0.12);
+  color: var(--color-secondary);
+  border: 1px solid rgba(6, 182, 212, 0.25);
+}
+
+.badge-past {
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--color-text-secondary);
+  border: 1px solid var(--glass-border);
+}
+
+// Location Pin
+.location-cell-content {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 600;
+  font-family: 'Outfit', sans-serif;
+
+  .loc-pin {
+    color: var(--color-danger);
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
+    filter: drop-shadow(0 0 4px rgba(244, 63, 94, 0.4));
+  }
+}
+
+.notes-text-cell {
+  max-width: 250px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-family: 'Inter', sans-serif;
+}
+
+// Attachment Badges
+.documents-badges-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+
+  .doc-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 10px;
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid var(--glass-border);
+    border-radius: 8px;
+    text-decoration: none;
+    color: var(--color-text-primary);
+    font-size: 12px;
+    width: fit-content;
+    max-width: 160px;
+    transition: var(--transition-smooth);
+
+    mat-icon {
+      font-size: 14px;
+      width: 14px;
+      height: 14px;
+      color: var(--color-secondary);
+    }
+
+    .doc-title {
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      font-family: 'Inter', sans-serif;
+      font-weight: 500;
+    }
+
+    &:hover {
+      background: rgba(6, 182, 212, 0.08);
+      border-color: var(--color-secondary);
+      transform: translateY(-1px);
+    }
+  }
+}
+
+// File Upload Lists
+.file-upload-section {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+
+  .file-label {
+    font-size: 13px;
+    color: var(--color-text-secondary);
+    font-weight: 600;
+    font-family: 'Outfit', sans-serif;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .hidden-input {
+    display: none;
+  }
+
+  .upload-btn-label {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 12px;
+    border: 1px dashed var(--glass-border);
+    border-radius: 12px;
+    cursor: pointer;
+    background: rgba(255, 255, 255, 0.01);
+    color: var(--color-text-secondary);
+    font-weight: 500;
+    transition: var(--transition-smooth);
+
+    &:hover {
+      border-color: var(--color-warning);
+      background: rgba(245, 158, 11, 0.06);
+      color: var(--color-text-primary);
+    }
+  }
+}
+
+.existing-docs-list, .new-docs-list {
+  margin-top: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  background: rgba(0, 0, 0, 0.2);
+  border: 1px solid var(--glass-border);
+  border-radius: 10px;
+  padding: 12px;
+
+  .section-sublabel {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--color-text-secondary);
+    text-transform: uppercase;
+    margin-bottom: 4px;
+    font-family: 'Outfit', sans-serif;
+    letter-spacing: 0.5px;
+  }
+
+  .existing-doc-row, .new-doc-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 6px 10px;
+    background: rgba(255, 255, 255, 0.02);
+    border-radius: 6px;
+    font-size: 12px;
+    font-family: 'Inter', sans-serif;
+
+    .filename-text {
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 220px;
+    }
+
+    .del-doc-btn {
+      background: transparent;
+      border: none;
+      color: var(--color-text-secondary);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      padding: 0;
+      transition: var(--transition-smooth);
+
+      mat-icon {
+        font-size: 14px;
+        width: 14px;
+        height: 14px;
+      }
+
+      &:hover {
+        color: var(--color-danger);
+        transform: scale(1.1);
+      }
+    }
+  }
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateX(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}

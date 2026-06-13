@@ -1,0 +1,173 @@
+<div class="page-container">
+  <div class="shopping-layout" [ngClass]="{'form-open': isFormOpen}">
+    <div class="main-panel">
+      <div class="page-header header-flex">
+        <div>
+          <h1>Shopping Details</h1>
+          <p>Track your purchases and secure your invoices.</p>
+        </div>
+        <div class="header-actions">
+          <button mat-flat-button color="primary" (click)="openAddForm()">
+            <mat-icon>add</mat-icon> Log Purchase
+          </button>
+        </div>
+      </div>
+
+      <!-- Shopping Logs Table -->
+      <mat-card class="table-card glass-panel">
+        <div class="table-container">
+          <table mat-table [dataSource]="shoppingList" class="tracker-table">
+            <!-- Date Column -->
+            <ng-container matColumnDef="date">
+              <th mat-header-cell *matHeaderCellDef> Date </th>
+              <td mat-cell *matCellDef="let element"> {{ element.date | date:'mediumDate' }} </td>
+            </ng-container>
+
+            <!-- Item Name Column -->
+            <ng-container matColumnDef="item_name">
+              <th mat-header-cell *matHeaderCellDef> Item Name </th>
+              <td mat-cell *matCellDef="let element" class="item-name-cell"> {{ element.item_name }} </td>
+            </ng-container>
+
+            <!-- Category Column -->
+            <ng-container matColumnDef="category">
+              <th mat-header-cell *matHeaderCellDef> Category </th>
+              <td mat-cell *matCellDef="let element"> 
+                <span class="category-badge badge-shopping">{{ element.category }}</span>
+              </td>
+            </ng-container>
+
+            <!-- Price Column -->
+            <ng-container matColumnDef="price">
+              <th mat-header-cell *matHeaderCellDef> Price </th>
+              <td mat-cell *matCellDef="let element" class="price-cell"> 
+                ₹{{ element.price | number:'1.2-2' }} 
+              </td>
+            </ng-container>
+
+            <!-- Invoice Attachment Column -->
+            <ng-container matColumnDef="invoice">
+              <th mat-header-cell *matHeaderCellDef> Invoice </th>
+              <td mat-cell *matCellDef="let element">
+                <button mat-icon-button color="accent" *ngIf="element.invoice_path" (click)="viewInvoice(element)" title="View Invoice">
+                  <mat-icon>receipt_long</mat-icon>
+                </button>
+                <span *ngIf="!element.invoice_path" class="text-muted">None</span>
+              </td>
+            </ng-container>
+
+            <!-- Actions Column -->
+            <ng-container matColumnDef="actions">
+              <th mat-header-cell *matHeaderCellDef> Actions </th>
+              <td mat-cell *matCellDef="let element">
+                <button mat-icon-button color="warn" (click)="deleteItem(element.id)" title="Delete Item">
+                  <mat-icon>delete</mat-icon>
+                </button>
+              </td>
+            </ng-container>
+
+            <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+            <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+            
+            <tr class="mat-row" *matNoDataRow>
+              <td class="mat-cell empty-cell" colspan="6">No shopping logs found. Click "Log Purchase" to track your shopping items.</td>
+            </tr>
+          </table>
+        </div>
+      </mat-card>
+    </div>
+
+    <!-- Collapsible Log Purchase Form -->
+    <div class="form-panel glass-panel" *ngIf="isFormOpen">
+      <div class="form-header">
+        <h3>Log New Purchase</h3>
+        <button mat-icon-button (click)="closeForm()"><mat-icon>close</mat-icon></button>
+      </div>
+
+      <form [formGroup]="shoppingForm" (ngSubmit)="onSubmit()" class="shopping-form">
+        <mat-form-field appearance="outline">
+          <mat-label>Item Name</mat-label>
+          <input matInput formControlName="item_name" placeholder="e.g. Headphones" required>
+          <mat-error *ngIf="shoppingForm.get('item_name')?.hasError('required')">Item name is required</mat-error>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>Category</mat-label>
+          <mat-select formControlName="category" required>
+            <mat-option *ngFor="let cat of categories" [value]="cat">{{ cat }}</mat-option>
+          </mat-select>
+          <mat-error *ngIf="shoppingForm.get('category')?.hasError('required')">Category is required</mat-error>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>Price (₹)</mat-label>
+          <input matInput type="number" step="0.01" formControlName="price" placeholder="0.00" required>
+          <mat-error *ngIf="shoppingForm.get('price')?.hasError('required')">Price is required</mat-error>
+          <mat-error *ngIf="shoppingForm.get('price')?.hasError('min')">Price must be positive</mat-error>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>Purchase Date</mat-label>
+          <input matInput type="date" formControlName="date" required>
+          <mat-error *ngIf="shoppingForm.get('date')?.hasError('required')">Date is required</mat-error>
+        </mat-form-field>
+
+        <!-- Invoice Upload Button & Preview -->
+        <div class="file-upload-section">
+          <label class="file-label">Attach Invoice (JPG/PNG/PDF)</label>
+          <input type="file" id="invoiceFile" class="hidden-input" (change)="onFileSelected($event)" accept=".jpg,.jpeg,.png,.pdf">
+          <label for="invoiceFile" class="upload-btn-label">
+            <mat-icon>cloud_upload</mat-icon>
+            <span>{{ selectedFile ? selectedFile.name : 'Choose Invoice File' }}</span>
+          </label>
+
+          <!-- Local preview for uploaded image -->
+          <div class="file-preview-box" *ngIf="selectedFile">
+            <div class="preview-header">
+              <span>Selected Preview:</span>
+              <span class="file-size">{{ (selectedFile.size / 1024) | number:'1.0-1' }} KB</span>
+            </div>
+            <div class="preview-content" *ngIf="filePreviewUrl">
+              <img [src]="filePreviewUrl" alt="Local preview" class="preview-img">
+            </div>
+            <div class="preview-pdf-info" *ngIf="fileType === 'application/pdf'">
+              <mat-icon class="pdf-icon">picture_as_pdf</mat-icon>
+              <span>PDF Document Attachment</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-actions">
+          <button mat-button type="button" (click)="closeForm()" [disabled]="isSubmitting">Cancel</button>
+          <button mat-flat-button color="primary" type="submit" [disabled]="shoppingForm.invalid || isSubmitting">
+            {{ isSubmitting ? 'Uploading...' : 'Save Log' }}
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Invoice Viewer Backdrop Overlay Modal -->
+<div class="invoice-modal-overlay" *ngIf="activeInvoiceUrl" (click)="closeInvoiceViewer()">
+  <div class="invoice-modal-card glass-panel" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h4>Invoice Preview: {{ activeInvoiceName }}</h4>
+      <button mat-icon-button (click)="closeInvoiceViewer()"><mat-icon>close</mat-icon></button>
+    </div>
+    <div class="modal-body">
+      <ng-container *ngIf="activeInvoiceType?.startsWith('image/')">
+        <img [src]="activeInvoiceUrl" alt="Invoice receipt" class="modal-preview-img">
+      </ng-container>
+      <ng-container *ngIf="activeInvoiceType === 'application/pdf'">
+        <div class="pdf-fallback-box">
+          <mat-icon class="pdf-box-icon">picture_as_pdf</mat-icon>
+          <p>This invoice is a PDF Document.</p>
+          <a mat-raised-button color="primary" [href]="activeInvoiceUrl" target="_blank">
+            <mat-icon>open_in_new</mat-icon> Open PDF in New Tab
+          </a>
+        </div>
+      </ng-container>
+    </div>
+  </div>
+</div>

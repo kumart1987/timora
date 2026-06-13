@@ -1,0 +1,78 @@
+<!-- If not logged in, just show route content (Auth Component) -->
+<ng-container *ngIf="!api.isLoggedIn()">
+  <div class="auth-outer-container">
+    <router-outlet></router-outlet>
+  </div>
+</ng-container>
+
+<!-- If logged in, show sidebar layout -->
+<ng-container *ngIf="api.isLoggedIn()">
+  <mat-sidenav-container class="sidenav-container">
+    <mat-sidenav #drawer class="sidenav" fixedInViewport
+        [attr.role]="'navigation'"
+        [mode]="'side'"
+        [opened]="true">
+      <div class="brand-container">
+        <mat-icon class="brand-icon">dashboard</mat-icon>
+        <span class="brand-name">TIMORA</span>
+      </div>
+      
+      <mat-nav-list class="nav-list">
+        <a mat-list-item routerLink="/dashboard" routerLinkActive="active-link" [routerLinkActiveOptions]="{exact: true}" class="nav-item">
+          <mat-icon matListItemIcon>space_dashboard</mat-icon>
+          <span matListItemTitle>Dashboard</span>
+        </a>
+        <a mat-list-item routerLink="/tracker" routerLinkActive="active-link" class="nav-item">
+          <mat-icon matListItemIcon>account_balance_wallet</mat-icon>
+          <span matListItemTitle>Spending Tracker</span>
+        </a>
+        <a mat-list-item routerLink="/shopping" routerLinkActive="active-link" class="nav-item">
+          <mat-icon matListItemIcon>shopping_bag</mat-icon>
+          <span matListItemTitle>Shopping Logs</span>
+        </a>
+        <a mat-list-item routerLink="/investments" routerLinkActive="active-link" class="nav-item">
+          <mat-icon matListItemIcon>show_chart</mat-icon>
+          <span matListItemTitle>Investments</span>
+        </a>
+        <a mat-list-item routerLink="/health" routerLinkActive="active-link" class="nav-item">
+          <mat-icon matListItemIcon>monitor_weight</mat-icon>
+          <span matListItemTitle>Health & Weight</span>
+        </a>
+        <a mat-list-item routerLink="/trips" routerLinkActive="active-link" class="nav-item">
+          <mat-icon matListItemIcon>explore</mat-icon>
+          <span matListItemTitle>Trips & Plans</span>
+        </a>
+      </mat-nav-list>
+      
+      <div class="user-profile-panel" *ngIf="currentUser">
+        <div class="avatar">
+          <mat-icon>account_circle</mat-icon>
+        </div>
+        <div class="user-details">
+          <div class="user-email" [title]="currentUser.email">{{ currentUser.email }}</div>
+        </div>
+        <button mat-icon-button (click)="logout()" title="Logout" class="logout-btn">
+          <mat-icon>logout</mat-icon>
+        </button>
+      </div>
+    </mat-sidenav>
+    
+    <mat-sidenav-content class="main-content">
+      <mat-toolbar class="top-toolbar">
+        <button type="button" aria-label="Toggle sidenav" mat-icon-button (click)="drawer.toggle()" class="toggle-btn">
+          <mat-icon aria-label="Side nav toggle icon">menu</mat-icon>
+        </button>
+        <span class="page-title">Personal Dashboard</span>
+        <span class="toolbar-spacer"></span>
+        <button mat-icon-button (click)="toggleTheme()" title="Toggle Light/Dark Theme" class="theme-toggle-btn" style="margin-right: 12px;">
+          <mat-icon>{{ isDarkMode ? 'light_mode' : 'dark_mode' }}</mat-icon>
+        </button>
+        <span class="date-display">{{ todayDate | date:'fullDate' }}</span>
+      </mat-toolbar>
+      
+      <div class="router-wrapper">
+        <router-outlet></router-outlet>
+      </div>
+    </mat-sidenav-content>
+  </mat-sidenav-container>
+</ng-container>

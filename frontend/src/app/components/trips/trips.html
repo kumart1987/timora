@@ -1,0 +1,177 @@
+<div class="page-container">
+  <div class="trips-layout" [ngClass]="{'form-open': isFormOpen}">
+    <div class="main-panel">
+      <div class="page-header header-flex">
+        <div>
+          <h1>Trips & Upcoming Plans</h1>
+          <p>Schedule your upcoming journeys, track tickets, and compile itineraries.</p>
+        </div>
+        <div class="header-actions">
+          <button mat-flat-button color="primary" (click)="openAddForm()">
+            <mat-icon>add_location</mat-icon> Plan Trip
+          </button>
+        </div>
+      </div>
+
+      <!-- Trips Table -->
+      <mat-card class="table-card glass-panel">
+        <div class="table-container">
+          <table mat-table [dataSource]="tripsList" class="tracker-table">
+            <!-- Dates Column -->
+            <ng-container matColumnDef="dates">
+              <th mat-header-cell *matHeaderCellDef> Dates </th>
+              <td mat-cell *matCellDef="let element" class="dates-cell">
+                <div class="date-range-display">
+                  <span>{{ element.start_date | date:'mediumDate' }}</span>
+                  <span class="date-separator">to</span>
+                  <span>{{ element.end_date | date:'mediumDate' }}</span>
+                </div>
+                
+                <!-- Countdown Badge -->
+                <div class="countdown-badge-wrapper">
+                  <span *ngIf="getDaysCount(element.start_date) > 0" class="badge-countdown badge-future">
+                    In {{ getDaysCount(element.start_date) }} days
+                  </span>
+                  <span *ngIf="getDaysCount(element.start_date) === 0" class="badge-countdown badge-today">
+                    Starts Today
+                  </span>
+                  <span *ngIf="getDaysCount(element.start_date) < 0" class="badge-countdown badge-past">
+                    Past Trip
+                  </span>
+                </div>
+              </td>
+            </ng-container>
+
+            <!-- Location Column -->
+            <ng-container matColumnDef="location">
+              <th mat-header-cell *matHeaderCellDef> Location </th>
+              <td mat-cell *matCellDef="let element" class="item-name-cell">
+                <div class="location-cell-content">
+                  <mat-icon class="loc-pin">location_on</mat-icon>
+                  <span>{{ element.location }}</span>
+                </div>
+              </td>
+            </ng-container>
+
+            <!-- Notes Column -->
+            <ng-container matColumnDef="notes">
+              <th mat-header-cell *matHeaderCellDef> Notes </th>
+              <td mat-cell *matCellDef="let element" class="notes-text-cell"> {{ element.notes || '-' }} </td>
+            </ng-container>
+
+            <!-- Documents Column -->
+            <ng-container matColumnDef="documents">
+              <th mat-header-cell *matHeaderCellDef> Documents </th>
+              <td mat-cell *matCellDef="let element">
+                <div class="documents-badges-list" *ngIf="element.documents && element.documents.length > 0">
+                  <a *ngFor="let doc of element.documents" 
+                     [href]="getTripDocUrl(doc)" 
+                     target="_blank" 
+                     class="doc-badge" 
+                     [title]="doc.filename">
+                    <mat-icon>attachment</mat-icon>
+                    <span class="doc-title">{{ doc.filename }}</span>
+                  </a>
+                </div>
+                <span *ngIf="!element.documents || element.documents.length === 0" class="text-muted">None</span>
+              </td>
+            </ng-container>
+
+            <!-- Actions Column -->
+            <ng-container matColumnDef="actions">
+              <th mat-header-cell *matHeaderCellDef> Actions </th>
+              <td mat-cell *matCellDef="let element">
+                <button mat-icon-button color="primary" (click)="openEditForm(element)" title="Edit Trip">
+                  <mat-icon>edit</mat-icon>
+                </button>
+                <button mat-icon-button color="warn" (click)="deleteTrip(element.id)" title="Cancel Trip">
+                  <mat-icon>delete</mat-icon>
+                </button>
+              </td>
+            </ng-container>
+
+            <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+            <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+            
+            <tr class="mat-row" *matNoDataRow>
+              <td class="mat-cell empty-cell" colspan="5">No trip plans registered yet. Click "Plan Trip" to document your upcoming travel notes and ticket records.</td>
+            </tr>
+          </table>
+        </div>
+      </mat-card>
+    </div>
+
+    <!-- Collapsible Edit/Add Form Sidebar -->
+    <div class="form-panel glass-panel" *ngIf="isFormOpen">
+      <div class="form-header">
+        <h3>{{ formMode === 'add' ? 'Plan New Trip' : 'Edit Trip details' }}</h3>
+        <button mat-icon-button (click)="closeForm()"><mat-icon>close</mat-icon></button>
+      </div>
+
+      <form [formGroup]="tripForm" (ngSubmit)="onSubmit()" class="trips-form">
+        <mat-form-field appearance="outline">
+          <mat-label>Destination Location</mat-label>
+          <input matInput formControlName="location" placeholder="e.g. Paris, France" required>
+          <mat-icon matSuffix>place</mat-icon>
+          <mat-error *ngIf="tripForm.get('location')?.hasError('required')">Destination is required</mat-error>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>Start Date</mat-label>
+          <input matInput type="date" formControlName="start_date" required>
+          <mat-error *ngIf="tripForm.get('start_date')?.hasError('required')">Start date is required</mat-error>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>End Date</mat-label>
+          <input matInput type="date" formControlName="end_date" required>
+          <mat-error *ngIf="tripForm.get('end_date')?.hasError('required')">End date is required</mat-error>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>Trip Notes / Details (Optional)</mat-label>
+          <textarea matInput formControlName="notes" rows="4" placeholder="Flight details, hotel reservation keys..."></textarea>
+        </mat-form-field>
+
+        <!-- Document Attachments Section -->
+        <div class="file-upload-section">
+          <label class="file-label">Attach Tickets & Itineraries (PDF/JPG/PNG)</label>
+          <input type="file" id="tripFiles" class="hidden-input" (change)="onFilesSelected($event)" accept=".jpg,.jpeg,.png,.pdf" multiple>
+          <label for="tripFiles" class="upload-btn-label">
+            <mat-icon>attachment</mat-icon>
+            <span>Upload Documents (Multiple)</span>
+          </label>
+
+          <!-- Existing documents listed when editing -->
+          <div class="existing-docs-list" *ngIf="existingDocuments.length > 0">
+            <span class="section-sublabel">Existing Attachments:</span>
+            <div class="existing-doc-row" *ngFor="let doc of existingDocuments; let i = index">
+              <span class="filename-text" [title]="doc.filename">{{ doc.filename }}</span>
+              <button type="button" class="del-doc-btn" (click)="removeExistingDocument(i)">
+                <mat-icon>close</mat-icon>
+              </button>
+            </div>
+          </div>
+
+          <!-- Newly selected files list -->
+          <div class="new-docs-list" *ngIf="selectedFiles.length > 0">
+            <span class="section-sublabel">Newly Selected:</span>
+            <div class="new-doc-row" *ngFor="let file of selectedFiles; let i = index">
+              <span class="filename-text" [title]="file.name">{{ file.name }}</span>
+              <button type="button" class="del-doc-btn" (click)="removeSelectedFile(i)">
+                <mat-icon>close</mat-icon>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-actions">
+          <button mat-button type="button" (click)="closeForm()" [disabled]="isSubmitting">Cancel</button>
+          <button mat-flat-button color="primary" type="submit" [disabled]="tripForm.invalid || isSubmitting">
+            {{ isSubmitting ? 'Saving...' : 'Save Plan' }}
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

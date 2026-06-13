@@ -1,0 +1,44 @@
+<div class="auth-wrapper">
+  <div class="auth-glow-1"></div>
+  <div class="auth-glow-2"></div>
+  
+  <mat-card class="auth-card glass-panel">
+    <div class="auth-header">
+      <mat-icon class="auth-logo">dashboard</mat-icon>
+      <h2>TIMORA</h2>
+      <p class="subtitle">{{ isLoginMode ? 'Sign in to access your personal dashboard' : 'Create an account to get started' }}</p>
+    </div>
+
+    <form [formGroup]="authForm" (ngSubmit)="onSubmit()" class="auth-form">
+      <mat-form-field appearance="outline">
+        <mat-label>Email Address</mat-label>
+        <input matInput type="email" formControlName="email" placeholder="you@example.com" required>
+        <mat-icon matSuffix>email</mat-icon>
+        <mat-error *ngIf="authForm.get('email')?.hasError('required')">Email is required</mat-error>
+        <mat-error *ngIf="authForm.get('email')?.hasError('email')">Please enter a valid email</mat-error>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline">
+        <mat-label>Password</mat-label>
+        <input matInput [type]="hidePassword ? 'password' : 'text'" formControlName="password" required>
+        <button type="button" mat-icon-button matSuffix (click)="hidePassword = !hidePassword" [attr.aria-label]="'Hide password'">
+          <mat-icon>{{hidePassword ? 'visibility_off' : 'visibility'}}</mat-icon>
+        </button>
+        <mat-error *ngIf="authForm.get('password')?.hasError('required')">Password is required</mat-error>
+        <mat-error *ngIf="authForm.get('password')?.hasError('minlength')">Password must be at least 6 characters</mat-error>
+      </mat-form-field>
+
+      <button mat-flat-button color="primary" type="submit" class="submit-btn" [disabled]="authForm.invalid || isLoading">
+        <span *ngIf="!isLoading">{{ isLoginMode ? 'Sign In' : 'Sign Up' }}</span>
+        <span *ngIf="isLoading">Please wait...</span>
+      </button>
+    </form>
+
+    <div class="auth-footer">
+      <span>{{ isLoginMode ? "Don't have an account?" : "Already have an account?" }}</span>
+      <button mat-button (click)="toggleMode()" type="button" class="toggle-btn">
+        {{ isLoginMode ? 'Sign Up' : 'Sign In' }}
+      </button>
+    </div>
+  </mat-card>
+</div>

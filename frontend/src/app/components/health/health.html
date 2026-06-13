@@ -1,0 +1,123 @@
+<div class="page-container">
+  <!-- Health Metrics Summary Cards -->
+  <div class="health-summary-grid">
+    <div class="summary-tile glass-card">
+      <span class="label">Current Weight</span>
+      <span class="value">{{ currentWeight ? currentWeight + ' kg' : '--' }}</span>
+    </div>
+    <div class="summary-tile glass-card">
+      <span class="label">Target Weight Goal</span>
+      <span class="value text-accent">{{ targetWeight ? targetWeight + ' kg' : 'Not Set' }}</span>
+    </div>
+    <div class="summary-tile glass-card progress-msg-tile">
+      <span class="label">Progress Indicator</span>
+      <span class="value-text">{{ progressMessage }}</span>
+    </div>
+  </div>
+
+  <div class="health-layout" [ngClass]="{'form-open': isFormOpen}">
+    <div class="main-panel">
+      <div class="page-header header-flex">
+        <div>
+          <h1>Health & Weight Tracker</h1>
+          <p>Log your daily weight, set goals, and monitor long-term physical trends.</p>
+        </div>
+        <div class="header-actions">
+          <button mat-flat-button color="primary" (click)="openAddForm()">
+            <mat-icon>scale</mat-icon> Log Weight
+          </button>
+        </div>
+      </div>
+
+      <!-- Weight Logs Table -->
+      <mat-card class="table-card glass-panel">
+        <div class="table-container">
+          <table mat-table [dataSource]="weightLogs" class="tracker-table">
+            <!-- Date Column -->
+            <ng-container matColumnDef="date">
+              <th mat-header-cell *matHeaderCellDef> Date </th>
+              <td mat-cell *matCellDef="let element"> {{ element.date | date:'mediumDate' }} </td>
+            </ng-container>
+
+            <!-- Weight Column -->
+            <ng-container matColumnDef="weight">
+              <th mat-header-cell *matHeaderCellDef> Weight </th>
+              <td mat-cell *matCellDef="let element" class="price-cell"> {{ element.weight }} kg </td>
+            </ng-container>
+
+            <!-- Note Column -->
+            <ng-container matColumnDef="note">
+              <th mat-header-cell *matHeaderCellDef> Notes </th>
+              <td mat-cell *matCellDef="let element"> {{ element.note || '-' }} </td>
+            </ng-container>
+
+            <!-- Actions Column -->
+            <ng-container matColumnDef="actions">
+              <th mat-header-cell *matHeaderCellDef> Actions </th>
+              <td mat-cell *matCellDef="let element">
+                <button mat-icon-button color="warn" (click)="deleteLog(element.id)" title="Delete Entry">
+                  <mat-icon>delete</mat-icon>
+                </button>
+              </td>
+            </ng-container>
+
+            <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+            <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+            
+            <tr class="mat-row" *matNoDataRow>
+              <td class="mat-cell empty-cell" colspan="4">No weight logs found. Click "Log Weight" to start tracking your weight.</td>
+            </tr>
+          </table>
+        </div>
+      </mat-card>
+    </div>
+
+    <!-- Right Side Panel (Form or Chart) -->
+    <div class="right-panel">
+      <!-- Log Weight Form Panel -->
+      <div class="form-panel glass-panel" *ngIf="isFormOpen">
+        <div class="form-header">
+          <h3>Log Daily Weight</h3>
+          <button mat-icon-button (click)="closeForm()"><mat-icon>close</mat-icon></button>
+        </div>
+
+        <form [formGroup]="healthForm" (ngSubmit)="onSubmit()" class="health-form">
+          <mat-form-field appearance="outline">
+            <mat-label>Current Weight (kg)</mat-label>
+            <input matInput type="number" step="0.1" formControlName="weight" placeholder="e.g. 75.4" required>
+            <mat-error *ngIf="healthForm.get('weight')?.hasError('required')">Weight is required</mat-error>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline">
+            <mat-label>Goal Target Weight (kg) (Optional)</mat-label>
+            <input matInput type="number" step="0.1" formControlName="goal_weight" placeholder="e.g. 70.0">
+          </mat-form-field>
+
+          <mat-form-field appearance="outline">
+            <mat-label>Date</mat-label>
+            <input matInput type="date" formControlName="date" required>
+            <mat-error *ngIf="healthForm.get('date')?.hasError('required')">Date is required</mat-error>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline">
+            <mat-label>Notes (Optional)</mat-label>
+            <textarea matInput formControlName="note" rows="3" placeholder="e.g. Fasting weight, after workout..."></textarea>
+          </mat-form-field>
+
+          <div class="form-actions">
+            <button mat-button type="button" (click)="closeForm()">Cancel</button>
+            <button mat-flat-button color="primary" type="submit" [disabled]="healthForm.invalid">Log Weight</button>
+          </div>
+        </form>
+      </div>
+
+      <!-- Weight Trend Chart Panel -->
+      <div class="chart-panel glass-card" *ngIf="!isFormOpen && weightLogs.length > 0">
+        <h4>Weight Trend Overview</h4>
+        <div class="canvas-wrapper">
+          <canvas #weightChartCanvas></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
