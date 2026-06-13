@@ -1,0 +1,9 @@
+{
+  "name": "timora-monorepo",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "postinstall": "npm install --prefix frontend --legacy-peer-deps",
+    "build": "npm run build --prefix frontend"
+  }
+}
