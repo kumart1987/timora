@@ -25,14 +25,41 @@ let investmentsSeq = 1;
 let weightLogsSeq = 1;
 let tripsSeq = 1;
 
+// Function to safely decode and URL-encode the password in connection string if it has special characters
+function normalizeConnectionString(str) {
+  if (!str) return str;
+  if (!str.startsWith('postgresql://') && !str.startsWith('postgres://')) {
+    return str;
+  }
+  const prefix = str.startsWith('postgresql://') ? 'postgresql://' : 'postgres://';
+  const remaining = str.slice(prefix.length);
+  const lastAtIndex = remaining.lastIndexOf('@');
+  if (lastAtIndex === -1) return str;
+  const credentials = remaining.slice(0, lastAtIndex);
+  const hostAndDb = remaining.slice(lastAtIndex + 1);
+  const colonIndex = credentials.indexOf(':');
+  if (colonIndex === -1) return str;
+  const user = credentials.slice(0, colonIndex);
+  let password = credentials.slice(colonIndex + 1);
+  try {
+    const decodedPassword = decodeURIComponent(password);
+    password = encodeURIComponent(decodedPassword);
+  } catch (e) {
+    password = encodeURIComponent(password);
+  }
+  return `${prefix}${user}:${password}@${hostAndDb}`;
+}
+
 // Default environment credentials, can be customized in a .env file
-const connectionString = process.env.DATABASE_URL || 'postgresql://postgres:postgres@localhost:5432/timora';
+const rawConnectionString = process.env.DATABASE_URL || 'postgresql://postgres:postgres@localhost:5432/timora';
+const connectionString = normalizeConnectionString(rawConnectionString);
 
 if (process.env.DATABASE_URL || process.env.DB_HOST) {
   const poolConfig = {};
   if (process.env.DATABASE_URL) {
     poolConfig.connectionString = connectionString;
-    if (connectionString.includes('supabase') || connectionString.includes('pooler')) {
+    const isLocalhost = connectionString.includes('localhost') || connectionString.includes('127.0.0.1');
+    if (!isLocalhost) {
       poolConfig.ssl = { rejectUnauthorized: false };
     }
   } else {
