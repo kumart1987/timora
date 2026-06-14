@@ -9,10 +9,17 @@ const authController = require('./controllers/authController');
 const mainController = require('./controllers/mainController');
 const authMiddleware = require('./middleware/auth');
 
-// Create uploads directory if it doesn't exist
-const uploadsDir = path.join(__dirname, 'uploads');
-if (!fs.existsSync(uploadsDir)) {
-  fs.mkdirSync(uploadsDir, { recursive: true });
+// Create uploads directory if it doesn't exist (using /tmp on Vercel to avoid EROFS)
+const uploadsDir = process.env.VERCEL
+  ? path.join('/tmp', 'uploads')
+  : path.join(__dirname, 'uploads');
+
+try {
+  if (!fs.existsSync(uploadsDir)) {
+    fs.mkdirSync(uploadsDir, { recursive: true });
+  }
+} catch (error) {
+  console.warn('Warning: Could not create uploads directory:', error.message);
 }
 
 // Multer storage setup for invoice & trip uploads
