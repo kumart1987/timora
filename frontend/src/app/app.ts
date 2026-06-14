@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { RouterOutlet, RouterLink, RouterLinkActive, Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { ApiService } from './services/api.service';
+import { BreakpointObserver } from '@angular/cdk/layout';
 
 // Angular Material Imports
 import { MatSidenavModule } from '@angular/material/sidenav';
@@ -32,12 +33,21 @@ export class App implements OnInit {
   currentUser: any = null;
   todayDate = new Date();
   isDarkMode = true;
+  isMobile = false;
 
-  constructor(public api: ApiService, private router: Router) {}
+  constructor(
+    public api: ApiService, 
+    private router: Router,
+    private breakpointObserver: BreakpointObserver
+  ) {}
 
   ngOnInit() {
     this.api.currentUser$.subscribe(user => {
       this.currentUser = user;
+    });
+
+    this.breakpointObserver.observe('(max-width: 959px)').subscribe(result => {
+      this.isMobile = result.matches;
     });
 
     const savedTheme = localStorage.getItem('timora_theme');
@@ -57,6 +67,12 @@ export class App implements OnInit {
       body.classList.remove('dark-theme');
     }
     localStorage.setItem('timora_theme', this.isDarkMode ? 'dark' : 'light');
+  }
+
+  onNavItemClick(drawer: any) {
+    if (this.isMobile) {
+      drawer.close();
+    }
   }
 
   logout() {

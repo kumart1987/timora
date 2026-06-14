@@ -5,40 +5,39 @@
   </div>
 </ng-container>
 
-<!-- If logged in, show sidebar layout -->
 <ng-container *ngIf="api.isLoggedIn()">
   <mat-sidenav-container class="sidenav-container">
     <mat-sidenav #drawer class="sidenav" fixedInViewport
         [attr.role]="'navigation'"
-        [mode]="'side'"
-        [opened]="true">
+        [mode]="isMobile ? 'over' : 'side'"
+        [opened]="!isMobile">
       <div class="brand-container">
         <mat-icon class="brand-icon">dashboard</mat-icon>
         <span class="brand-name">TIMORA</span>
       </div>
       
       <mat-nav-list class="nav-list">
-        <a mat-list-item routerLink="/dashboard" routerLinkActive="active-link" [routerLinkActiveOptions]="{exact: true}" class="nav-item">
+        <a mat-list-item routerLink="/dashboard" routerLinkActive="active-link" [routerLinkActiveOptions]="{exact: true}" class="nav-item" (click)="onNavItemClick(drawer)">
           <mat-icon matListItemIcon>space_dashboard</mat-icon>
           <span matListItemTitle>Dashboard</span>
         </a>
-        <a mat-list-item routerLink="/tracker" routerLinkActive="active-link" class="nav-item">
+        <a mat-list-item routerLink="/tracker" routerLinkActive="active-link" class="nav-item" (click)="onNavItemClick(drawer)">
           <mat-icon matListItemIcon>account_balance_wallet</mat-icon>
           <span matListItemTitle>Spending Tracker</span>
         </a>
-        <a mat-list-item routerLink="/shopping" routerLinkActive="active-link" class="nav-item">
+        <a mat-list-item routerLink="/shopping" routerLinkActive="active-link" class="nav-item" (click)="onNavItemClick(drawer)">
           <mat-icon matListItemIcon>shopping_bag</mat-icon>
           <span matListItemTitle>Shopping Logs</span>
         </a>
-        <a mat-list-item routerLink="/investments" routerLinkActive="active-link" class="nav-item">
+        <a mat-list-item routerLink="/investments" routerLinkActive="active-link" class="nav-item" (click)="onNavItemClick(drawer)">
           <mat-icon matListItemIcon>show_chart</mat-icon>
           <span matListItemTitle>Investments</span>
         </a>
-        <a mat-list-item routerLink="/health" routerLinkActive="active-link" class="nav-item">
+        <a mat-list-item routerLink="/health" routerLinkActive="active-link" class="nav-item" (click)="onNavItemClick(drawer)">
           <mat-icon matListItemIcon>monitor_weight</mat-icon>
           <span matListItemTitle>Health & Weight</span>
         </a>
-        <a mat-list-item routerLink="/trips" routerLinkActive="active-link" class="nav-item">
+        <a mat-list-item routerLink="/trips" routerLinkActive="active-link" class="nav-item" (click)="onNavItemClick(drawer)">
           <mat-icon matListItemIcon>explore</mat-icon>
           <span matListItemTitle>Trips & Plans</span>
         </a>
