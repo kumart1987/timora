@@ -3,7 +3,8 @@
   "outputDirectory": "frontend/dist/frontend/browser",
   "functions": {
     "backend/server.js": {
-      "runtime": "@vercel/node"
+      "runtime": "@vercel/node",
+      "includeFiles": "backend/.env"
     }
   },
   "rewrites": [

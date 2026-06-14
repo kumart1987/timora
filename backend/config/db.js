@@ -1,4 +1,8 @@
 const { Pool } = require('pg');
+const path = require('path');
+
+// Explicitly load .env from the parent directory of config/
+require('dotenv').config({ path: path.join(__dirname, '..', '.env') });
 
 let pool = null;
 let useMock = false;
@@ -51,12 +55,19 @@ function normalizeConnectionString(str) {
 }
 
 // Default environment credentials, can be customized in a .env file
-const rawConnectionString = process.env.DATABASE_URL || 'postgresql://postgres:postgres@localhost:5432/timora';
-const connectionString = normalizeConnectionString(rawConnectionString);
+const rawConnectionString = process.env.DATABASE_URL;
+const isProduction = process.env.NODE_ENV === 'production' || process.env.VERCEL;
 
-if (process.env.DATABASE_URL || process.env.DB_HOST) {
+let connectionString = null;
+if (rawConnectionString) {
+  connectionString = normalizeConnectionString(rawConnectionString);
+}
+
+const hasDbConfig = !!(rawConnectionString || process.env.DB_HOST);
+
+if (hasDbConfig) {
   const poolConfig = {};
-  if (process.env.DATABASE_URL) {
+  if (rawConnectionString) {
     poolConfig.connectionString = connectionString;
     const isLocalhost = connectionString.includes('localhost') || connectionString.includes('127.0.0.1');
     if (!isLocalhost) {
@@ -74,17 +85,28 @@ if (process.env.DATABASE_URL || process.env.DB_HOST) {
   // Test the connection
   pool.connect((err, client, release) => {
     if (err) {
-      console.error('*** PostgreSQL Connection Failed! Falling back to IN-MEMORY Mock DB ***');
+      console.error('*** PostgreSQL Connection Failed! ***');
       console.error('Reason:', err.message);
-      useMock = true;
+      if (isProduction) {
+        console.error('CRITICAL: Running in production/Vercel environment. NOT falling back to Mock DB.');
+        useMock = false;
+      } else {
+        console.warn('Falling back to IN-MEMORY Mock DB for local development.');
+        useMock = true;
+      }
     } else {
       console.log('--- Connected to PostgreSQL successfully ---');
       release();
     }
   });
 } else {
-  console.log('--- DATABASE_URL/DB_HOST not provided. Running in IN-MEMORY Mock DB mode ---');
-  useMock = true;
+  if (isProduction) {
+    console.error('*** CRITICAL ERROR: DATABASE_URL/DB_HOST not provided in Production/Vercel environment! ***');
+    useMock = false;
+  } else {
+    console.log('--- DATABASE_URL/DB_HOST not provided. Running in IN-MEMORY Mock DB mode ---');
+    useMock = true;
+  }
 }
 
 // Simple in-memory query simulator for SQL execution
@@ -377,6 +399,11 @@ module.exports = {
   query: (text, params) => {
     if (useMock) {
       return mockQuery(text, params);
+    }
+    if (!pool) {
+      throw new Error(
+        'Database connection pool is not initialized. Please configure the DATABASE_URL environment variable.'
+      );
     }
     return pool.query(text, params);
   },
