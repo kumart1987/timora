@@ -1,4 +1,13 @@
 {
   "buildCommand": "npm run build",
-  "outputDirectory": "dist/frontend/browser"
+  "outputDirectory": "dist/frontend/browser",
+  "functions": {
+    "api/index.js": {
+      "includeFiles": "../backend/.env"
+    }
+  },
+  "rewrites": [
+    { "source": "/api/:path*", "destination": "/api/index" },
+    { "source": "/uploads/:path*", "destination": "/../backend/uploads/:path*" }
+  ]
 }
