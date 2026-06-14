@@ -58,9 +58,26 @@ function normalizeConnectionString(str) {
 const rawConnectionString = process.env.DATABASE_URL;
 const isProduction = process.env.NODE_ENV === 'production' || process.env.VERCEL;
 
+function rewriteConnectionStringForPooler(connStr) {
+  if (!connStr) return connStr;
+  if (connStr.includes('db.vosknkhyhscsbmqozfly.supabase.co')) {
+    console.log('--- Rewriting database connection string for Supabase Pooler (IPv4) ---');
+    let rewritten = connStr
+      .replace('db.vosknkhyhscsbmqozfly.supabase.co:5432', 'aws-1-ap-south-1.pooler.supabase.com:6543')
+      .replace('db.vosknkhyhscsbmqozfly.supabase.co:6543', 'aws-1-ap-south-1.pooler.supabase.com:6543')
+      .replace('db.vosknkhyhscsbmqozfly.supabase.co', 'aws-1-ap-south-1.pooler.supabase.com:6543');
+    if (rewritten.includes('://postgres:') && !rewritten.includes('://postgres.vosknkhyhscsbmqozfly:')) {
+      rewritten = rewritten.replace('://postgres:', '://postgres.vosknkhyhscsbmqozfly:');
+    }
+    console.log('Rewritten connection string host successfully');
+    return rewritten;
+  }
+  return connStr;
+}
+
 let connectionString = null;
 if (rawConnectionString) {
-  connectionString = normalizeConnectionString(rawConnectionString);
+  connectionString = rewriteConnectionStringForPooler(normalizeConnectionString(rawConnectionString));
 }
 
 const hasDbConfig = !!(rawConnectionString || process.env.DB_HOST);
@@ -74,11 +91,26 @@ if (hasDbConfig) {
       poolConfig.ssl = { rejectUnauthorized: false };
     }
   } else {
-    poolConfig.host = process.env.DB_HOST;
-    poolConfig.user = process.env.DB_USER;
+    let host = process.env.DB_HOST;
+    let user = process.env.DB_USER;
+    let port = process.env.DB_PORT || 5432;
+    if (host === 'db.vosknkhyhscsbmqozfly.supabase.co') {
+      console.log('--- Rewriting database config fields for Supabase Pooler (IPv4) ---');
+      host = 'aws-1-ap-south-1.pooler.supabase.com';
+      port = 6543;
+      if (user === 'postgres') {
+        user = 'postgres.vosknkhyhscsbmqozfly';
+      }
+    }
+    poolConfig.host = host;
+    poolConfig.user = user;
     poolConfig.password = process.env.DB_PASSWORD;
     poolConfig.database = process.env.DB_NAME;
-    poolConfig.port = process.env.DB_PORT || 5432;
+    poolConfig.port = port;
+    const isLocalhost = host.includes('localhost') || host.includes('127.0.0.1');
+    if (!isLocalhost) {
+      poolConfig.ssl = { rejectUnauthorized: false };
+    }
   }
   pool = new Pool(poolConfig);
 
