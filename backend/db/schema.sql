@@ -80,7 +80,7 @@ CREATE INDEX idx_invoices_shopping ON "Invoices"("shopping_id");
 CREATE TABLE "Investments" (
     "id" SERIAL PRIMARY KEY,
     "user_id" INT REFERENCES "Users"("id") ON DELETE CASCADE,
-    "type" VARCHAR(50) NOT NULL CHECK ("type" IN ('Mutual Fund', 'Stock')),
+    "type" VARCHAR(50) NOT NULL CHECK ("type" IN ('Mutual Fund', 'Stock', 'Chit')),
     "name" VARCHAR(255) NOT NULL,
     "symbol" VARCHAR(50),
     "units" NUMERIC(16, 4) NOT NULL CHECK ("units" > 0),

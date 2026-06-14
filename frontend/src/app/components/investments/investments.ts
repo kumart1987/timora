@@ -191,25 +191,48 @@ export class Investments implements OnInit {
     // Calculate allocation by Type
     let stockVal = 0;
     let mfVal = 0;
+    let chitVal = 0;
     this.investmentsList.forEach(inv => {
       const v = parseFloat(inv.units) * parseFloat(inv.current_price);
       if (inv.type === 'Stock') {
         stockVal += v;
+      } else if (inv.type === 'Chit') {
+        chitVal += v;
       } else {
         mfVal += v;
       }
     });
 
-    if (stockVal === 0 && mfVal === 0) return;
+    if (stockVal === 0 && mfVal === 0 && chitVal === 0) return;
+
+    const labels = [];
+    const data = [];
+    const colors = [];
+
+    if (stockVal > 0) {
+      labels.push('Stocks');
+      data.push(stockVal);
+      colors.push('rgba(6, 182, 212, 0.8)');
+    }
+    if (mfVal > 0) {
+      labels.push('Mutual Funds');
+      data.push(mfVal);
+      colors.push('rgba(99, 102, 241, 0.8)');
+    }
+    if (chitVal > 0) {
+      labels.push('Chits');
+      data.push(chitVal);
+      colors.push('rgba(245, 158, 11, 0.8)');
+    }
 
     const ctx = this.portfolioChartCanvas.nativeElement.getContext('2d');
     this.portfolioChart = new Chart(ctx, {
       type: 'doughnut',
       data: {
-        labels: ['Stocks', 'Mutual Funds'],
+        labels: labels,
         datasets: [{
-          data: [stockVal, mfVal],
-          backgroundColor: ['rgba(6, 182, 212, 0.8)', 'rgba(99, 102, 241, 0.8)'],
+          data: data,
+          backgroundColor: colors,
           borderWidth: 1.5,
           borderColor: 'rgba(12, 12, 26, 0.8)'
         }]

@@ -39,7 +39,7 @@
             <ng-container matColumnDef="type">
               <th mat-header-cell *matHeaderCellDef> Type </th>
               <td mat-cell *matCellDef="let element">
-                <span class="category-badge" [ngClass]="element.type === 'Stock' ? 'badge-stock' : 'badge-mf'">
+                <span class="category-badge" [ngClass]="element.type === 'Stock' ? 'badge-stock' : (element.type === 'Chit' ? 'badge-chit' : 'badge-mf')">
                   {{ element.type }}
                 </span>
               </td>
@@ -144,6 +144,7 @@
             <mat-select formControlName="type" required>
               <mat-option value="Stock">Stock</mat-option>
               <mat-option value="Mutual Fund">Mutual Fund</mat-option>
+              <mat-option value="Chit">Chit</mat-option>
             </mat-select>
           </mat-form-field>
 

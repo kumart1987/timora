@@ -244,6 +244,17 @@ tr:hover .edit-price-btn {
   font-family: 'Outfit', sans-serif;
 }
 
+.badge-chit {
+  background: rgba(245, 158, 11, 0.12);
+  color: var(--color-warning);
+  border: 1px solid rgba(245, 158, 11, 0.25);
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  font-family: 'Outfit', sans-serif;
+}
+
 @keyframes slideIn {
   from {
     opacity: 0;
