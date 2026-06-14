@@ -1,8 +1,8 @@
 const { Pool } = require('pg');
 const path = require('path');
 
-// Explicitly load .env from the parent directory of config/
-require('dotenv').config({ path: path.join(__dirname, '..', '.env') });
+// Explicitly load env configuration
+require('./env');
 
 let pool = null;
 let useMock = false;
