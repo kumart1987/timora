@@ -3,7 +3,7 @@
   "outputDirectory": "dist/frontend/browser",
   "functions": {
     "api/index.js": {
-      "includeFiles": "../backend/.env"
+      "includeFiles": ".env"
     }
   },
   "rewrites": [
