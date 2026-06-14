@@ -6,6 +6,7 @@ import { Shopping } from './components/shopping/shopping';
 import { Investments } from './components/investments/investments';
 import { Health } from './components/health/health';
 import { Trips } from './components/trips/trips';
+import { BucketList } from './components/bucketlist/bucketlist';
 import { authGuard } from './guards/auth.guard';
 import { noAuthGuard } from './guards/no-auth.guard';
 
@@ -17,6 +18,7 @@ export const routes: Routes = [
   { path: 'investments', component: Investments, canActivate: [authGuard] },
   { path: 'health', component: Health, canActivate: [authGuard] },
   { path: 'trips', component: Trips, canActivate: [authGuard] },
+  { path: 'bucketlist', component: BucketList, canActivate: [authGuard] },
   { path: '', redirectTo: '/dashboard', pathMatch: 'full' },
   { path: '**', redirectTo: '/dashboard' }
 ];

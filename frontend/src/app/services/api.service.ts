@@ -137,4 +137,18 @@ export class ApiService {
   deleteTrip(id: number): Observable<any> {
     return this.http.delete(`${this.baseUrl}/trips/${id}`);
   }
+
+  // --- Bucket List ---
+  getBucketList(): Observable<any> {
+    return this.http.get(`${this.baseUrl}/bucketlist`);
+  }
+  addBucketListItem(data: any): Observable<any> {
+    return this.http.post(`${this.baseUrl}/bucketlist`, data);
+  }
+  updateBucketListItem(id: number, data: any): Observable<any> {
+    return this.http.put(`${this.baseUrl}/bucketlist/${id}`, data);
+  }
+  deleteBucketListItem(id: number): Observable<any> {
+    return this.http.delete(`${this.baseUrl}/bucketlist/${id}`);
+  }
 }

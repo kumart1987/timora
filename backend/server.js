@@ -99,6 +99,12 @@ app.post('/api/trips', authMiddleware, upload.array('documents', 5), mainControl
 app.put('/api/trips/:id', authMiddleware, upload.array('documents', 5), mainController.updateTrip);
 app.delete('/api/trips/:id', authMiddleware, mainController.deleteTrip);
 
+// 8. Bucket List
+app.get('/api/bucketlist', authMiddleware, mainController.getBucketList);
+app.post('/api/bucketlist', authMiddleware, mainController.addBucketListItem);
+app.put('/api/bucketlist/:id', authMiddleware, mainController.updateBucketListItem);
+app.delete('/api/bucketlist/:id', authMiddleware, mainController.deleteBucketListItem);
+
 // Global Error Handler for Upload limits/types
 app.use((err, req, res, next) => {
   if (err instanceof multer.MulterError) {

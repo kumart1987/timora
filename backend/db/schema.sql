@@ -118,3 +118,16 @@ CREATE TABLE "Trips" (
 );
 
 CREATE INDEX idx_trips_user_dates ON "Trips"("user_id", "start_date");
+
+-- 9. BucketList Table
+CREATE TABLE "BucketList" (
+    "id" SERIAL PRIMARY KEY,
+    "user_id" INT REFERENCES "Users"("id") ON DELETE CASCADE,
+    "title" VARCHAR(255) NOT NULL,
+    "description" TEXT,
+    "target_date" DATE,
+    "status" VARCHAR(50) NOT NULL DEFAULT 'Pending' CHECK ("status" IN ('Pending', 'In Progress', 'Completed')),
+    "created_at" TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX idx_bucketlist_user ON "BucketList"("user_id");

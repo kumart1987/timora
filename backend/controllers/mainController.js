@@ -446,3 +446,70 @@ exports.deleteTrip = async (req, res) => {
     res.status(500).json({ message: 'Error deleting trip' });
   }
 };
+
+// --- 8. Bucket List ---
+exports.getBucketList = async (req, res) => {
+  const userId = req.user.id;
+  try {
+    const result = await db.query('SELECT * FROM "BucketList" WHERE user_id = $1 ORDER BY created_at DESC', [userId]);
+    res.status(200).json(result.rows);
+  } catch (error) {
+    console.error('Error fetching bucket list:', error);
+    res.status(500).json({ message: 'Error loading bucket list' });
+  }
+};
+
+exports.addBucketListItem = async (req, res) => {
+  const userId = req.user.id;
+  const { title, description, target_date, status } = req.body;
+  if (!title) {
+    return res.status(400).json({ message: 'Title is required' });
+  }
+  try {
+    const result = await db.query(
+      'INSERT INTO "BucketList" (user_id, title, description, target_date, status) VALUES ($1, $2, $3, $4, $5) RETURNING *',
+      [userId, title, description || null, target_date || null, status || 'Pending']
+    );
+    res.status(201).json(result.rows[0]);
+  } catch (error) {
+    console.error('Error adding bucket list item:', error);
+    res.status(500).json({ message: 'Error creating bucket list item' });
+  }
+};
+
+exports.updateBucketListItem = async (req, res) => {
+  const userId = req.user.id;
+  const { id } = req.params;
+  const { title, description, target_date, status } = req.body;
+  if (!title) {
+    return res.status(400).json({ message: 'Title is required' });
+  }
+  try {
+    const result = await db.query(
+      'UPDATE "BucketList" SET title=$1, description=$2, target_date=$3, status=$4 WHERE id=$5 AND user_id=$6 RETURNING *',
+      [title, description || null, target_date || null, status, id, userId]
+    );
+    if (result.rows.length === 0) {
+      return res.status(404).json({ message: 'Bucket list item not found or unauthorized' });
+    }
+    res.status(200).json(result.rows[0]);
+  } catch (error) {
+    console.error('Error updating bucket list item:', error);
+    res.status(500).json({ message: 'Error updating bucket list item' });
+  }
+};
+
+exports.deleteBucketListItem = async (req, res) => {
+  const userId = req.user.id;
+  const { id } = req.params;
+  try {
+    const result = await db.query('DELETE FROM "BucketList" WHERE id = $1 AND user_id = $2', [id, userId]);
+    if (result.rowCount === 0) {
+      return res.status(404).json({ message: 'Bucket list item not found or unauthorized' });
+    }
+    res.status(200).json({ message: 'Bucket list item deleted successfully' });
+  } catch (error) {
+    console.error('Error deleting bucket list item:', error);
+    res.status(500).json({ message: 'Error deleting bucket list item' });
+  }
+};

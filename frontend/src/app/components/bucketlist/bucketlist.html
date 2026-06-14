@@ -1,0 +1,131 @@
+<div class="page-container">
+  <div class="bucket-layout">
+    <div class="main-panel">
+      <div class="page-header header-flex">
+        <div>
+          <h1>Bucket List</h1>
+          <p>Collect and achieve your life goals and dreams.</p>
+        </div>
+        <div class="header-actions">
+          <button mat-flat-button color="primary" (click)="openAddForm()">
+            <mat-icon>playlist_add</mat-icon> Add Dream
+          </button>
+        </div>
+      </div>
+
+      <!-- Bucket List Table -->
+      <mat-card class="table-card glass-panel">
+        <div class="table-container">
+          <table mat-table [dataSource]="bucketList" class="tracker-table">
+            <!-- Title Column -->
+            <ng-container matColumnDef="title">
+              <th mat-header-cell *matHeaderCellDef> Dream / Goal </th>
+              <td mat-cell *matCellDef="let element" class="item-name-cell"> {{ element.title }} </td>
+            </ng-container>
+
+            <!-- Description Column -->
+            <ng-container matColumnDef="description">
+              <th mat-header-cell *matHeaderCellDef> Description </th>
+              <td mat-cell *matCellDef="let element"> {{ element.description || '-' }} </td>
+            </ng-container>
+
+            <!-- Target Date Column -->
+            <ng-container matColumnDef="target_date">
+              <th mat-header-cell *matHeaderCellDef> Target Date </th>
+              <td mat-cell *matCellDef="let element"> 
+                {{ element.target_date ? (element.target_date | date:'mediumDate') : '-' }} 
+              </td>
+            </ng-container>
+
+            <!-- Status Column -->
+            <ng-container matColumnDef="status">
+              <th mat-header-cell *matHeaderCellDef> Status </th>
+              <td mat-cell *matCellDef="let element">
+                <span class="category-badge" [ngClass]="{
+                  'badge-pending': element.status === 'Pending',
+                  'badge-progress': element.status === 'In Progress',
+                  'badge-completed': element.status === 'Completed'
+                }">
+                  {{ element.status }}
+                </span>
+              </td>
+            </ng-container>
+
+            <!-- Actions Column -->
+            <ng-container matColumnDef="actions">
+              <th mat-header-cell *matHeaderCellDef> Actions </th>
+              <td mat-cell *matCellDef="let element">
+                <div class="table-actions">
+                  <!-- Quick status toggles -->
+                  <button mat-icon-button color="primary" *ngIf="element.status !== 'In Progress' && element.status !== 'Completed'" (click)="updateStatus(element, 'In Progress')" title="Start Item">
+                    <mat-icon>play_arrow</mat-icon>
+                  </button>
+                  <button mat-icon-button color="accent" *ngIf="element.status !== 'Completed'" (click)="updateStatus(element, 'Completed')" title="Mark Completed">
+                    <mat-icon>check_circle</mat-icon>
+                  </button>
+                  <button mat-icon-button color="primary" (click)="openEditForm(element)" title="Edit Item">
+                    <mat-icon>edit</mat-icon>
+                  </button>
+                  <button mat-icon-button color="warn" (click)="deleteItem(element.id)" title="Delete Item">
+                    <mat-icon>delete</mat-icon>
+                  </button>
+                </div>
+              </td>
+            </ng-container>
+
+            <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+            <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+            
+            <tr class="mat-row" *matNoDataRow>
+              <td class="mat-cell empty-cell" colspan="5">Your bucket list is empty. Click "Add Dream" to log your aspirations.</td>
+            </tr>
+          </table>
+        </div>
+      </mat-card>
+    </div>
+
+    <!-- Add/Edit Form Panel -->
+    <div class="right-panel" *ngIf="isFormOpen">
+      <div class="form-panel glass-panel">
+        <div class="form-header">
+          <h3>{{ editingId ? 'Edit Goal' : 'Add Dream' }}</h3>
+          <button mat-icon-button (click)="closeForm()"><mat-icon>close</mat-icon></button>
+        </div>
+
+        <form [formGroup]="bucketForm" (ngSubmit)="onSubmit()" class="bucket-form">
+          <mat-form-field appearance="outline">
+            <mat-label>What is your goal?</mat-label>
+            <input matInput formControlName="title" placeholder="e.g. Scuba diving, Visit Paris" required>
+            <mat-error *ngIf="bucketForm.get('title')?.hasError('required')">Goal title is required</mat-error>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline">
+            <mat-label>Description (Optional)</mat-label>
+            <textarea matInput formControlName="description" rows="3" placeholder="Add some details..."></textarea>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline">
+            <mat-label>Target Date (Optional)</mat-label>
+            <input matInput type="date" formControlName="target_date">
+          </mat-form-field>
+
+          <mat-form-field appearance="outline">
+            <mat-label>Status</mat-label>
+            <mat-select formControlName="status" required>
+              <mat-option value="Pending">Pending</mat-option>
+              <mat-option value="In Progress">In Progress</mat-option>
+              <mat-option value="Completed">Completed</mat-option>
+            </mat-select>
+          </mat-form-field>
+
+          <div class="form-actions">
+            <button mat-button type="button" (click)="closeForm()">Cancel</button>
+            <button mat-flat-button color="primary" type="submit" [disabled]="bucketForm.invalid">
+              {{ editingId ? 'Update' : 'Add Goal' }}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>

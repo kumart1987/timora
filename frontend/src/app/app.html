@@ -41,6 +41,10 @@
           <mat-icon matListItemIcon>explore</mat-icon>
           <span matListItemTitle>Trips & Plans</span>
         </a>
+        <a mat-list-item routerLink="/bucketlist" routerLinkActive="active-link" class="nav-item" (click)="onNavItemClick(drawer)">
+          <mat-icon matListItemIcon>format_list_bulleted</mat-icon>
+          <span matListItemTitle>Bucket List</span>
+        </a>
       </mat-nav-list>
       
       <div class="user-profile-panel" *ngIf="currentUser">

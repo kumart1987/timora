@@ -16,7 +16,8 @@ const mockDb = {
   invoices: [],
   investments: [],
   weightLogs: [],
-  trips: []
+  trips: [],
+  bucketList: []
 };
 
 // Auto incrementing IDs
@@ -28,6 +29,7 @@ let invoicesSeq = 1;
 let investmentsSeq = 1;
 let weightLogsSeq = 1;
 let tripsSeq = 1;
+let bucketListSeq = 1;
 
 // Function to safely decode and URL-encode the password in connection string if it has special characters
 function normalizeConnectionString(str) {
@@ -419,6 +421,52 @@ async function mockQuery(text, params = []) {
         documents: typeof documents === 'string' ? JSON.parse(documents) : documents 
       };
       return { rows: [mockDb.trips[index]] };
+    }
+    return { rows: [] };
+  }
+
+  // 9. BucketList Queries
+  if (query.includes('INSERT INTO BucketList') || query.includes('insert into BucketList')) {
+    const [userId, title, description, targetDate, status] = params;
+    const item = { 
+      id: bucketListSeq++, 
+      user_id: parseInt(userId), 
+      title, 
+      description, 
+      target_date: targetDate, 
+      status: status || 'Pending', 
+      created_at: new Date() 
+    };
+    mockDb.bucketList.push(item);
+    return { rows: [item] };
+  }
+  if (query.includes('SELECT * FROM BucketList WHERE user_id') || query.includes('select * from BucketList where user_id')) {
+    const userId = parseInt(params[0]);
+    const list = mockDb.bucketList.filter(item => item.user_id === userId);
+    return { rows: list };
+  }
+  if (query.includes('DELETE FROM BucketList WHERE id') || query.includes('delete from BucketList where id')) {
+    const id = parseInt(params[0]);
+    const userId = parseInt(params[1]);
+    const index = mockDb.bucketList.findIndex(item => item.id === id && item.user_id === userId);
+    if (index !== -1) {
+      mockDb.bucketList.splice(index, 1);
+      return { rowCount: 1 };
+    }
+    return { rowCount: 0 };
+  }
+  if (query.includes('UPDATE BucketList SET') || query.includes('update BucketList set')) {
+    const [title, description, targetDate, status, id, userId] = params;
+    const index = mockDb.bucketList.findIndex(item => item.id === parseInt(id) && item.user_id === parseInt(userId));
+    if (index !== -1) {
+      mockDb.bucketList[index] = { 
+        ...mockDb.bucketList[index], 
+        title, 
+        description, 
+        target_date: targetDate, 
+        status 
+      };
+      return { rows: [mockDb.bucketList[index]] };
     }
     return { rows: [] };
   }
