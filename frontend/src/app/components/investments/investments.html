@@ -1,16 +1,40 @@
 <div class="page-container">
+  <!-- Page Header -->
+  <div class="page-header header-flex">
+    <div>
+      <h1>Investments Portfolio</h1>
+      <p class="subtitle">Track your Mutual Funds and Stocks assets and gain performance indicators.</p>
+    </div>
+    <div class="header-actions">
+      <button mat-flat-button color="primary" (click)="openAddForm()">
+        <mat-icon>add_chart</mat-icon> Add Investment
+      </button>
+    </div>
+  </div>
+
   <!-- Portfolio Summary Cards -->
   <div class="invest-summary-grid">
     <div class="summary-tile glass-card">
-      <span class="label">Total Cost Basis</span>
+      <div class="tile-header">
+        <span class="label">Total Cost Basis</span>
+        <mat-icon class="tile-icon cost-icon">payments</mat-icon>
+      </div>
       <span class="value">₹{{ totalCost | number:'1.2-2' }}</span>
     </div>
     <div class="summary-tile glass-card">
-      <span class="label">Current Portfolio Value</span>
+      <div class="tile-header">
+        <span class="label">Current Portfolio Value</span>
+        <mat-icon class="tile-icon value-icon">account_balance_wallet</mat-icon>
+      </div>
       <span class="value text-accent">₹{{ totalValue | number:'1.2-2' }}</span>
     </div>
     <div class="summary-tile glass-card">
-      <span class="label">Net Gain / Loss</span>
+      <div class="tile-header">
+        <span class="label">Net Gain / Loss</span>
+        <mat-icon class="tile-icon gain-icon" [ngClass]="netGain >= 0 ? 'gain-pos' : 'gain-neg'">
+          {{ netGain >= 0 ? 'trending_up' : 'trending_down' }}
+        </mat-icon>
+      </div>
       <span class="value" [ngClass]="netGain >= 0 ? 'text-positive' : 'text-negative'">
         {{ netGain >= 0 ? '+' : '' }}₹{{ netGain | number:'1.2-2' }} ({{ gainPercent | number:'1.1-2' }}%)
       </span>
@@ -19,17 +43,6 @@
 
   <div class="investments-layout" [ngClass]="{'form-open': isFormOpen}">
     <div class="main-panel">
-      <div class="page-header header-flex">
-        <div>
-          <h1>Investments Portfolio</h1>
-          <p>Track your Mutual Funds and Stocks assets and gain performance indicators.</p>
-        </div>
-        <div class="header-actions">
-          <button mat-flat-button color="primary" (click)="openAddForm()">
-            <mat-icon>add_chart</mat-icon> Add Investment
-          </button>
-        </div>
-      </div>
 
       <!-- Assets Table -->
       <mat-card class="table-card glass-panel">
@@ -45,16 +58,15 @@
               </td>
             </ng-container>
 
-            <!-- Name Column -->
+            <!-- Name Column (with Symbol integrated) -->
             <ng-container matColumnDef="name">
-              <th mat-header-cell *matHeaderCellDef> Name </th>
-              <td mat-cell *matCellDef="let element" class="item-name-cell"> {{ element.name }} </td>
-            </ng-container>
-
-            <!-- Symbol Column -->
-            <ng-container matColumnDef="symbol">
-              <th mat-header-cell *matHeaderCellDef> Symbol </th>
-              <td mat-cell *matCellDef="let element"> {{ element.symbol || '-' }} </td>
+              <th mat-header-cell *matHeaderCellDef> Asset </th>
+              <td mat-cell *matCellDef="let element" class="item-name-cell">
+                <div class="asset-info">
+                  <span class="asset-name">{{ element.name }}</span>
+                  <span class="asset-symbol" *ngIf="element.symbol">{{ element.symbol }}</span>
+                </div>
+              </td>
             </ng-container>
 
             <!-- Units Column -->
@@ -191,7 +203,7 @@
       </div>
 
       <!-- Asset Allocation Chart Panel -->
-      <div class="chart-panel glass-card" *ngIf="!isFormOpen && investmentsList.length > 0">
+      <div class="chart-panel glass-card" *ngIf="investmentsList.length > 0">
         <h4>Portfolio Allocation</h4>
         <div class="canvas-wrapper">
           <canvas #portfolioChartCanvas></canvas>

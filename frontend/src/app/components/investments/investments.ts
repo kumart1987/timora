@@ -35,7 +35,7 @@ import { MatTableModule } from '@angular/material/table';
 })
 export class Investments implements OnInit {
   investmentsList: any[] = [];
-  displayedColumns = ['type', 'name', 'symbol', 'units', 'purchase_price', 'current_price', 'total_value', 'gain_loss', 'actions'];
+  displayedColumns = ['type', 'name', 'units', 'purchase_price', 'current_price', 'total_value', 'gain_loss', 'actions'];
 
   // Portfolio Totals
   totalCost = 0;

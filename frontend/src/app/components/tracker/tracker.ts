@@ -38,7 +38,16 @@ import { MatTableModule } from '@angular/material/table';
 export class Tracker implements OnInit, AfterViewInit {
   incomeList: any[] = [];
   expensesList: any[] = [];
+  allIncomeList: any[] = [];
+  allExpensesList: any[] = [];
   displayedColumns = ['date', 'category', 'description', 'amount', 'actions'];
+
+  // Period Filtering State
+  selectedPeriod = 'all';
+  availablePeriods: { value: string; label: string }[] = [];
+  filterFromDate = '';
+  filterToDate = '';
+
 
   // Form State
   trackerForm!: FormGroup;
@@ -50,6 +59,7 @@ export class Tracker implements OnInit, AfterViewInit {
   // Categories
   incomeCategories = ['Salary', 'Freelance', 'Investments', 'Refunds', 'Gifts', 'Other'];
   expenseCategories = ['Food', 'Travel', 'Bills', 'Shopping', 'Rent', 'Entertainment', 'Health', 'Other'];
+  showCustomCategoryInput = false;
 
   // Charts
   @ViewChild('expenseChartCanvas') expenseChartCanvas!: ElementRef;
@@ -77,19 +87,182 @@ export class Tracker implements OnInit, AfterViewInit {
     this.trackerForm = this.fb.group({
       amount: ['', [Validators.required, Validators.min(0.01)]],
       category: ['', Validators.required],
+      customCategory: [''],
       description: [''],
       date: [today, Validators.required]
     });
+    this.showCustomCategoryInput = false;
+  }
+
+  onCategoryChange(val: string) {
+    this.showCustomCategoryInput = val === 'CUSTOM_CATEGORY';
+    const customControl = this.trackerForm.get('customCategory');
+    if (this.showCustomCategoryInput) {
+      customControl?.setValidators([Validators.required]);
+    } else {
+      customControl?.clearValidators();
+      customControl?.setValue('');
+    }
+    customControl?.updateValueAndValidity();
+  }
+
+  onPeriodChange(val: string) {
+    this.selectedPeriod = val;
+    if (val === 'custom') {
+      if (!this.filterFromDate || !this.filterToDate) {
+        const today = new Date();
+        const yyyy = today.getFullYear();
+        const mm = String(today.getMonth() + 1).padStart(2, '0');
+        const dd = String(today.getDate()).padStart(2, '0');
+        this.filterFromDate = `${yyyy}-${mm}-01`;
+        this.filterToDate = `${yyyy}-${mm}-${dd}`;
+      }
+    }
+    this.filterDataByPeriod();
+  }
+
+  onFromDateChange(val: string) {
+    this.filterFromDate = val;
+    this.filterDataByPeriod();
+  }
+
+  onToDateChange(val: string) {
+    this.filterToDate = val;
+    this.filterDataByPeriod();
+  }
+
+  generatePeriods() {
+    const periodsSet = new Set<string>();
+    
+    const scanList = [...this.allIncomeList, ...this.allExpensesList];
+    scanList.forEach(item => {
+      if (item.date) {
+        try {
+          const d = new Date(item.date);
+          if (!isNaN(d.getTime())) {
+            const year = d.getFullYear();
+            const month = String(d.getMonth() + 1).padStart(2, '0');
+            periodsSet.add(`${year}-${month}`);
+          }
+        } catch (e) {
+          console.error(e);
+        }
+      }
+    });
+
+    if (periodsSet.size === 0) {
+      const today = new Date();
+      const year = today.getFullYear();
+      const month = String(today.getMonth() + 1).padStart(2, '0');
+      periodsSet.add(`${year}-${month}`);
+    }
+
+    const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+    this.availablePeriods = Array.from(periodsSet)
+      .sort()
+      .reverse()
+      .map(pVal => {
+        const [y, m] = pVal.split('-');
+        const monthIndex = parseInt(m, 10) - 1;
+        return {
+          value: pVal,
+          label: `${monthNames[monthIndex]} ${y}`
+        };
+      });
+  }
+
+  filterDataByPeriod() {
+    if (this.selectedPeriod === 'all') {
+      this.incomeList = [...this.allIncomeList];
+      this.expensesList = [...this.allExpensesList];
+    } else if (this.selectedPeriod === 'custom') {
+      const filterFn = (item: any) => {
+        if (!item.date) return false;
+        const itemDate = new Date(item.date);
+        if (isNaN(itemDate.getTime())) return false;
+
+        if (this.filterFromDate) {
+          const from = new Date(this.filterFromDate);
+          from.setHours(0, 0, 0, 0);
+          if (itemDate < from) return false;
+        }
+        if (this.filterToDate) {
+          const to = new Date(this.filterToDate);
+          to.setHours(23, 59, 59, 999);
+          if (itemDate > to) return false;
+        }
+        return true;
+      };
+
+      this.incomeList = this.allIncomeList.filter(filterFn);
+      this.expensesList = this.allExpensesList.filter(filterFn);
+    } else {
+      const [targetYear, targetMonth] = this.selectedPeriod.split('-');
+      
+      const filterFn = (item: any) => {
+        if (!item.date) return false;
+        const d = new Date(item.date);
+        return d.getFullYear().toString() === targetYear && 
+               String(d.getMonth() + 1).padStart(2, '0') === targetMonth;
+      };
+
+      this.incomeList = this.allIncomeList.filter(filterFn);
+      this.expensesList = this.allExpensesList.filter(filterFn);
+    }
+    
+    setTimeout(() => this.renderCharts(), 50);
   }
 
   loadData() {
     this.api.getIncome().subscribe({
       next: (income) => {
-        this.incomeList = income;
+        this.allIncomeList = income;
+        
+        // Dynamically add stored income categories
+        if (income) {
+          income.forEach((item: any) => {
+            const cat = item.category;
+            if (cat && !this.incomeCategories.includes(cat)) {
+              const otherIndex = this.incomeCategories.indexOf('Other');
+              if (otherIndex !== -1) {
+                this.incomeCategories.splice(otherIndex, 0, cat);
+              } else {
+                this.incomeCategories.push(cat);
+              }
+            }
+          });
+        }
+
         this.api.getExpenses().subscribe({
           next: (expenses) => {
-            this.expensesList = expenses;
-            setTimeout(() => this.renderCharts(), 100);
+            this.allExpensesList = expenses;
+
+            // Dynamically add stored expense categories
+            if (expenses) {
+              expenses.forEach((item: any) => {
+                const cat = item.category;
+                if (cat && !this.expenseCategories.includes(cat)) {
+                  const otherIndex = this.expenseCategories.indexOf('Other');
+                  if (otherIndex !== -1) {
+                    this.expenseCategories.splice(otherIndex, 0, cat);
+                  } else {
+                    this.expenseCategories.push(cat);
+                  }
+                }
+              });
+            }
+
+            // Generate periods list from raw data
+            this.generatePeriods();
+
+            // Reset selected period to 'all' if the selected period is no longer available
+            const periodExists = this.availablePeriods.some(p => p.value === this.selectedPeriod);
+            if (this.selectedPeriod !== 'all' && !periodExists) {
+              this.selectedPeriod = 'all';
+            }
+
+            // Filter and refresh display
+            this.filterDataByPeriod();
           },
           error: (err) => console.error('Error loading expenses:', err)
         });
@@ -132,9 +305,36 @@ export class Tracker implements OnInit, AfterViewInit {
     if (this.trackerForm.invalid) return;
 
     const formVal = this.trackerForm.value;
+    let category = formVal.category;
+
+    if (category === 'CUSTOM_CATEGORY') {
+      category = formVal.customCategory.trim();
+      
+      // Save it to dropdown arrays for future selections in current session
+      if (this.currentTransactionType === 'income') {
+        if (!this.incomeCategories.includes(category)) {
+          const otherIndex = this.incomeCategories.indexOf('Other');
+          if (otherIndex !== -1) {
+            this.incomeCategories.splice(otherIndex, 0, category);
+          } else {
+            this.incomeCategories.push(category);
+          }
+        }
+      } else {
+        if (!this.expenseCategories.includes(category)) {
+          const otherIndex = this.expenseCategories.indexOf('Other');
+          if (otherIndex !== -1) {
+            this.expenseCategories.splice(otherIndex, 0, category);
+          } else {
+            this.expenseCategories.push(category);
+          }
+        }
+      }
+    }
+
     const transactionData = {
       amount: parseFloat(formVal.amount),
-      category: formVal.category,
+      category: category,
       description: formVal.description,
       date: formVal.date
     };
@@ -205,6 +405,22 @@ export class Tracker implements OnInit, AfterViewInit {
     const activeCategories = Object.keys(categoryTotals).filter(cat => categoryTotals[cat] > 0);
     const categoryValues = activeCategories.map(cat => categoryTotals[cat]);
 
+    // Setup responsive colors list that supports custom categories gracefully
+    const presetColors = [
+      'rgba(244, 63, 94, 0.8)',   // Food (rose)
+      'rgba(245, 158, 11, 0.8)',  // Travel (amber)
+      'rgba(99, 102, 241, 0.8)',  // Bills (indigo)
+      'rgba(6, 182, 212, 0.8)',   // Shopping (cyan)
+      'rgba(139, 92, 246, 0.8)',  // Rent (purple)
+      'rgba(236, 72, 153, 0.8)',  // Entertainment (pink)
+      'rgba(16, 185, 129, 0.8)',  // Health (emerald)
+      'rgba(20, 184, 166, 0.8)',  // Teal
+      'rgba(249, 115, 22, 0.8)',  // Orange
+      'rgba(234, 179, 8, 0.8)',   // Yellow
+      'rgba(148, 163, 184, 0.8)'  // Other (slate)
+    ];
+    const chartColors = activeCategories.map((_, index) => presetColors[index % presetColors.length]);
+
     // Render Doughnut Chart (Expenses breakdown)
     const ctxExpense = this.expenseChartCanvas.nativeElement.getContext('2d');
     this.expenseChart = new Chart(ctxExpense, {
@@ -213,16 +429,7 @@ export class Tracker implements OnInit, AfterViewInit {
         labels: activeCategories,
         datasets: [{
           data: categoryValues,
-          backgroundColor: [
-            'rgba(244, 63, 94, 0.8)',   // Food (rose)
-            'rgba(245, 158, 11, 0.8)',  // Travel (amber)
-            'rgba(99, 102, 241, 0.8)',  // Bills (indigo)
-            'rgba(6, 182, 212, 0.8)',   // Shopping (cyan)
-            'rgba(139, 92, 246, 0.8)',  // Rent (purple)
-            'rgba(236, 72, 153, 0.8)',  // Entertainment (pink)
-            'rgba(16, 185, 129, 0.8)',  // Health (emerald)
-            'rgba(148, 163, 184, 0.8)'  // Other (slate)
-          ],
+          backgroundColor: chartColors,
           borderWidth: 1.5,
           borderColor: 'rgba(12, 12, 26, 0.8)'
         }]

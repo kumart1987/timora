@@ -7,6 +7,28 @@
           <p>Manage and categorize your personal cash flow.</p>
         </div>
         <div class="header-actions">
+          <mat-form-field appearance="outline" class="month-filter-field" subscriptSizing="dynamic">
+            <mat-label>View Period</mat-label>
+            <mat-select [value]="selectedPeriod" (selectionChange)="onPeriodChange($event.value)">
+              <mat-option value="all">All Time</mat-option>
+              <mat-option value="custom">Custom Date Range</mat-option>
+              <mat-option *ngFor="let period of availablePeriods" [value]="period.value">
+                {{ period.label }}
+              </mat-option>
+            </mat-select>
+          </mat-form-field>
+
+          <!-- Custom Date Range Filters -->
+          <ng-container *ngIf="selectedPeriod === 'custom'">
+            <mat-form-field appearance="outline" class="date-filter-field" subscriptSizing="dynamic">
+              <mat-label>From</mat-label>
+              <input matInput type="date" [value]="filterFromDate" (change)="onFromDateChange($any($event.target).value)">
+            </mat-form-field>
+            <mat-form-field appearance="outline" class="date-filter-field" subscriptSizing="dynamic">
+              <mat-label>To</mat-label>
+              <input matInput type="date" [value]="filterToDate" (change)="onToDateChange($any($event.target).value)">
+            </mat-form-field>
+          </ng-container>
           <button mat-flat-button color="primary" (click)="openAddForm('income')" class="btn-income-add">
             <mat-icon>add</mat-icon> Add Income
           </button>
@@ -164,15 +186,23 @@
 
         <mat-form-field appearance="outline">
           <mat-label>Category</mat-label>
-          <mat-select formControlName="category" required>
+          <mat-select formControlName="category" required (selectionChange)="onCategoryChange($event.value)">
             <ng-container *ngIf="currentTransactionType === 'income'">
               <mat-option *ngFor="let cat of incomeCategories" [value]="cat">{{ cat }}</mat-option>
             </ng-container>
             <ng-container *ngIf="currentTransactionType === 'expense'">
               <mat-option *ngFor="let cat of expenseCategories" [value]="cat">{{ cat }}</mat-option>
             </ng-container>
+            <mat-option value="CUSTOM_CATEGORY">+ Add Custom Category...</mat-option>
           </mat-select>
           <mat-error *ngIf="trackerForm.get('category')?.hasError('required')">Category is required</mat-error>
+        </mat-form-field>
+
+        <!-- Custom Category Input Field -->
+        <mat-form-field appearance="outline" *ngIf="showCustomCategoryInput">
+          <mat-label>Custom Category Name</mat-label>
+          <input matInput formControlName="customCategory" placeholder="e.g. Side Hustle, Insurance" required>
+          <mat-error *ngIf="trackerForm.get('customCategory')?.hasError('required')">Custom Category is required</mat-error>
         </mat-form-field>
 
         <mat-form-field appearance="outline">

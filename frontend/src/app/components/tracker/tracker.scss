@@ -70,6 +70,8 @@
 
   .header-actions {
     display: flex;
+    flex-wrap: wrap;
+    align-items: center;
     gap: 12px;
 
     @media (max-width: 599px) {
@@ -150,5 +152,26 @@
   to {
     opacity: 1;
     transform: translateX(0);
+  }
+}
+
+.month-filter-field {
+  width: 170px;
+}
+
+.date-filter-field {
+  width: 130px;
+
+  input[type="date"] {
+    font-family: inherit;
+    color: inherit;
+    background: transparent;
+    border: none;
+    padding: 0;
+
+    &::-webkit-calendar-picker-indicator {
+      filter: invert(0.7);
+      cursor: pointer;
+    }
   }
 }
