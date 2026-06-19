@@ -11,13 +11,36 @@ export class ApiService {
   public currentUser$ = this.currentUserSubject.asObservable();
 
   constructor(private http: HttpClient) {
+    const token = localStorage.getItem('timora_token');
     const savedUser = localStorage.getItem('timora_user');
-    if (savedUser) {
+    
+    if (token && this.isTokenExpired(token)) {
+      localStorage.removeItem('timora_token');
+      localStorage.removeItem('timora_user');
+      this.currentUserSubject.next(null);
+    } else if (savedUser) {
       try {
         this.currentUserSubject.next(JSON.parse(savedUser));
       } catch (e) {
         localStorage.removeItem('timora_user');
       }
+    }
+  }
+
+  isTokenExpired(token: string): boolean {
+    try {
+      const parts = token.split('.');
+      if (parts.length !== 3) return true;
+      
+      const payload = JSON.parse(atob(parts[1]));
+      if (!payload.exp) return false;
+      
+      const expirationDate = new Date(0);
+      expirationDate.setUTCSeconds(payload.exp);
+      
+      return expirationDate.valueOf() < new Date().valueOf();
+    } catch (err) {
+      return true;
     }
   }
 
@@ -53,7 +76,9 @@ export class ApiService {
   }
 
   isLoggedIn(): boolean {
-    return !!localStorage.getItem('timora_token');
+    const token = localStorage.getItem('timora_token');
+    if (!token) return false;
+    return !this.isTokenExpired(token);
   }
 
   // --- Dashboard ---
